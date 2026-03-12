@@ -11,6 +11,7 @@ engine: knitr
 ---
 
 ## Question 1
+
 ```{r}
 #| echo: false
 #| message: false
@@ -18,6 +19,7 @@ engine: knitr
 
 # for libraries
 library(ggplot2)
+library(dplyr)
 ```
 
 ```{r}
@@ -32,6 +34,7 @@ test = listings[-trainindex, ]
 ```
 
 Exploring the *Price* variable, we see that it is heavily left-skewed. Because of this, we choose a high percentile value in order for the cutoff to represent the most "balanced" variation.
+
 ```{r}
 #| echo: false
 #| message: false
@@ -60,13 +63,25 @@ ggplot(Price) +
 
 ```
 
+```{r}
+x = quantile(train$price, probs = 0.75)
+train$HighPrice = as.integer(train$price > x)
+
+#get rid of original variable
+train$price = NULL  
+
+#Proportion Table 
+prop.table(table(train$HighPrice)) 
+```
 
 \newpage
 
 ## Question 2
+
 \newpage
 
 ## Question 3
+
 \newpage
 
 ## Question 4
