@@ -1,0 +1,72 @@
+---
+title: "Continuous Assignment 1"
+author: 
+  - "Fhatuwani Mokwenda"
+  - "Jadene Jafthar"
+format:
+  pdf: 
+    mainfont: "Times New Roman"
+
+engine: knitr
+---
+
+## Question 1
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+# for libraries
+library(ggplot2)
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#Split data: training (80%) and testing(20%)
+set.seed(123)
+trainindex = sample(nrow(listings), size = 0.8*nrow(listings))
+train = listings[trainindex, ]
+test = listings[-trainindex, ]
+```
+
+Exploring the *Price* variable, we see that it is heavily left-skewed. Because of this, we choose a high percentile value in order for the cutoff to represent the most "balanced" variation.
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+# picking a cuttoff x
+Price <- train$price
+cutoff <- 0.75
+
+x <- quantile(Price, cutoff)
+hist(Price, 
+     main = "Distribution of Price",
+     col = "lightblue",
+     breaks = 50)
+abline(v = x, col = "red")
+text()
+
+ggplot(Price) +
+  geom_histogram(binwidth = 5, fill = "lightblue", color = "white") +
+  geom_vline(xintercept = x, color = "red", linetype = "dashed", size = 1) +
+  annotate("text", x = x, y = 8, label = paste("Cuttof =", index_value),
+           color = "red", hjust = -0.1) +
+  labs(title = "Histogram with Index Line", x = "Value", y = "Count")
+
+
+
+```
+
+
+\newpage
+
+## Question 2
+\newpage
+
+## Question 3
+\newpage
+
+## Question 4
