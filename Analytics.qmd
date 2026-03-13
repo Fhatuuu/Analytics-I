@@ -20,6 +20,9 @@ engine: knitr
 # for libraries
 library(ggplot2)
 library(dplyr)
+library(knitr)
+library(kableExtra) 
+library(broom)
 ```
 
 ```{r}
@@ -59,24 +62,39 @@ ggplot(Price) +
            color = "red", hjust = -0.1) +
   labs(title = "Histogram with Index Line", x = "Value", y = "Count")
 
-
-
 ```
 
 ```{r}
 x = quantile(train$price, probs = 0.75)
 train$HighPrice = as.integer(train$price > x)
 
-#get rid of original variable
+#Get rid of original variable
 train$price = NULL  
+test$price = NULL
 
 #Proportion Table 
 prop.table(table(train$HighPrice)) 
 ```
 
+```{r}
+#Defining variables 
+y = train[, 30]
+x = train[, -30]
+train_pros = data.frame(x, HighPrice = y)
+lm_full = lm(HighPrice ~ ., data = train_pros)
+
+lm_full |> 
+  tidy() |> 
+  kable(digits = 3, caption = "Saturated linear Model")
+```
+
 \newpage
 
 ## Question 2
+
+```{r}
+
+```
 
 \newpage
 
