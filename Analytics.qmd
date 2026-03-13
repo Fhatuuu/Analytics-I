@@ -47,15 +47,6 @@ hist(Price,
      col = "lightblue",
      breaks = 50)
 abline(v = x, col = "red")
-text()
-
-ggplot(Price) +
-  geom_histogram(binwidth = 5, fill = "lightblue", color = "white") +
-  geom_vline(xintercept = x, color = "red", linetype = "dashed", size = 1) +
-  annotate("text", x = x, y = 8, label = paste("Cuttof =", index_value),
-           color = "red", hjust = -0.1) +
-  labs(title = "Histogram with Index Line", x = "Value", y = "Count")
-
 
 
 ```
