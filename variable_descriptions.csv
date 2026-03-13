@@ -11,7 +11,7 @@ host_verifications,factor,
 neighbourhood_ward,text,The neighbourhood ward as geocoded using the latitude and longitude against neighborhoods as defined by open or public digital shapefiles.
 latitude,numeric,Uses the World Geodetic System (WGS84) projection for latitude and longitude.
 longitude,numeric,Uses the World Geodetic System (WGS84) projection for latitude and longitude.
-room_type,factor,"[Entire home/apt|Private room|Shared room|Hotel]
+room_type ****,factor,"[Entire home/apt|Private room|Shared room|Hotel]
 
 All homes are grouped into the following three room types:
 

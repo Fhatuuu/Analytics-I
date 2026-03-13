@@ -23,19 +23,21 @@ library(dplyr)
 library(knitr)
 library(kableExtra) 
 library(broom)
-library(svglite)
+library(glmnet)
+library(caret)
+
 ```
 
 ```{r}
 #| echo: false
 #| message: false
 #| warning: false
-#Split data: training (80%) and testing(20%)
+#Split data: train_dfing (80%) and testing(20%)
 set.seed(2026)
 listings <- read.csv("listings.csv")
-trainindex = sample(nrow(listings), size = 0.8*nrow(listings))
-train = listings[trainindex, ]
-test = listings[-trainindex, ]
+train_dfindex = sample(nrow(listings), size = 0.8*nrow(listings))
+train_df = listings[train_dfindex, ]
+test = listings[-train_dfindex, ]
 ```
 
 Exploring the *Price* variable, we see that it is heavily left-skewed. Because of this, we choose a high percentile value in order for the cutoff to represent the most "balanced" variation.
@@ -46,7 +48,7 @@ Exploring the *Price* variable, we see that it is heavily left-skewed. Because o
 #| warning: false
 
 # picking a cuttoff x
-Price <- train$price
+Price <- train_df$price
 cutoff <- 0.75
 
 x <- quantile(Price, cutoff)
@@ -59,43 +61,115 @@ abline(v = x, col = "red")
 ```
 
 ```{r}
-train$HighPrice = as.integer(train$price > x)
+#| echo: false
+#| message: false
+#| warning: false
+
+train_df$HighPrice = as.integer(train_df$price > x)
 
 #Get rid of original variable
-train$price = NULL  
-test$price = NULL
+train_df <- train_df |> select(-price)
+
+test <- test |>  select(-price)
 
 #Proportion Table 
-prop.table(table(train$HighPrice)) 
+prop.table(table(train_df$HighPrice)) 
 
 ```
 
 ```{r}
-#Defining variables 
-y = train[, 30]
-x = train[, c("host_listings_count", "latitude", "longitude", "accommodates", "beds", "review_scores_rating")]
-train_pros = data.frame(x, HighPrice = y)
-lm_full = lm(HighPrice ~ ., data = train_pros)
-summary(lm_full)
-```
+#| echo: false
+#| message: false
+#| warning: false
 
+#Defining variables 
+y = train_df[, 30]
+X = train_df[, c("host_listings_count", "latitude", "longitude", "accommodates", "beds", "review_scores_rating")]
+train_df_pros = data.frame(X, HighPrice = y)
+lm_full = lm(HighPrice ~ ., data = train_df_pros)
+#summary(lm_full)
+```
+This analysis is performed by looking at *HighPrice* as the categorical response variable where 
+$$
+HighPrice =
+\begin{cases}
+1 & \text{if price exceed the } 75^{th} \text{ percentile} \\
+0 & \text{otherwise}
+\end{cases}
+$$
+The predictor variables are as follows:
+...
 \newpage
 
 ## Question 2
 ```{r}
-set.seed(2026)
+#| echo: false
+#| message: false
+#| warning: false
+# centering for KNN and elastic net
+prepoc <- preProcess(X, method = c("center", "scale"))
+X_processed <- predict(prepoc, X)
+train_proc <- cbind(X_processed, HighPrice = y)
 ```
+
+
 
 ### Regularised Elastic-Net Logistic Regression
 ```{r}
+#| echo: false
+#| message: false
+#| warning: false
+alpha <- seq(0, 1, 0.1) # 0: ridge and 1: lasso
+lambda_vals <- 10 ^ seq(-4, 1, length = 20)
+enet_fit <- train(
+  HighPrice ~ .,
+  data = train
+)
 
 ```
 
 ### Random Forest
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+```
 
 ### xgBoost
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+```
+
 
 ### KNN
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+# Cross Validation
+train_control <- trainControl(
+  method = "cv",
+  number = 5,
+  classProbs = TRUE,
+  summaryFunction = twoClassSummary,
+  savePredictions = "final"
+)
+
+# tuning
+knn_fit <- train(
+  HighPrice ~ .,
+  data = train_proc,
+  method = "knn",
+  tuneGrid = expand.grid(k = 1:20),
+  trControl = train_control,
+  metric = "ROC"
+)
+  
+```
+
 \newpage
 
 ## Question 3
