@@ -20,11 +20,14 @@ engine: knitr
 # for libraries
 library(ggplot2)
 library(dplyr)
+library(tidyr)
 library(knitr)
 library(kableExtra) 
 library(broom)
 library(glmnet)
 library(caret)
+library(pROC)
+library(xgboost)
 
 ```
 
@@ -102,6 +105,7 @@ The predictor variables are as follows:
 \newpage
 
 ## Question 2
+### Modelling Approach
 ```{r}
 #| echo: false
 #| message: false
@@ -110,44 +114,9 @@ The predictor variables are as follows:
 prepoc <- preProcess(X, method = c("center", "scale"))
 X_processed <- predict(prepoc, X)
 train_proc <- cbind(X_processed, HighPrice = y)
-```
-
-
-
-### Regularised Elastic-Net Logistic Regression
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-alpha <- seq(0, 1, 0.1) # 0: ridge and 1: lasso
-lambda_vals <- 10 ^ seq(-4, 1, length = 20)
-enet_fit <- train(
-  HighPrice ~ .,
-  data = train
-)
-
-```
-
-### Random Forest
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-```
-
-### xgBoost
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-```
-
-
-### KNN
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
+train_proc$HighPrice <- factor(train_proc$HighPrice,
+                               levels = c(0, 1),
+                               labels = c("No", "Yes"))
 
 # Cross Validation
 train_control <- trainControl(
@@ -157,6 +126,80 @@ train_control <- trainControl(
   summaryFunction = twoClassSummary,
   savePredictions = "final"
 )
+```
+
+
+
+#### Regularised Elastic-Net Logistic Regression
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+alpha <- seq(0, 1, 0.1) # 0: ridge and 1: lasso
+lambda_vals <- 10 ^ seq(-4, 1, length = 20)
+enet_fit <- train(
+  HighPrice ~ .,
+  data = train_proc,
+  method = "glmnet",
+  trControl = train_control,
+  tuneGrid =expand.grid(alpha = alpha, lambda = lambda_vals),
+  metric = "ROC"
+)
+
+```
+
+#### Random Forest
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+set.seed(2026)
+rf_fit <- train(
+  HighPrice ~ .,
+  data = train_proc,
+  method = "rf",
+  tuneLength = 5,
+  trControl = train_control,
+  metric = "ROC"
+)
+```
+
+#### xgBoost
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+set.seed(2026)
+xb_grid <- expand.grid(
+  nrounds = c(50, 100, 150),
+  max_depth = c(3, 5, 7),
+  eta = c(0.01, 0.1, 0.3),
+  gamma = 0,
+  colsample_bytree = 0.8,
+  min_child_weight = 1,
+  subsample = 0.8
+)
+
+xb_fit <- train(
+  HighPrice ~ .,
+  data = train_proc,
+  method = "xgbTree",
+  trControl = train_control,
+  tuneGrid = xb_grid,
+  metric = "ROC"
+)
+xb_fit
+```
+
+
+#### KNN
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
 
 # tuning
 knn_fit <- train(
@@ -167,8 +210,85 @@ knn_fit <- train(
   trControl = train_control,
   metric = "ROC"
 )
-  
 ```
+\newpage
+
+### Model Performance
+
+Using a threshold of $\tau = 0.5$, we're comparing each model's metrics for **Accuracy**, **F1 Score**, **Precision**, **Recall**, **Specificity**, and **AUROC**.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+models <- list(ElasticNet = enet_fit, RF = rf_fit, XGBoost = xb_fit, KNN = knn_fit)
+
+metrics <- function (model){
+  pred <- model$pred
+  
+  # select best-tuning params
+  if (!is.null(model$bestTune)){
+    for (col in names(model$bestTune)){
+      pred <- pred[pred[[col]] == model$bestTune[[col]], ]
+    }
+  }
+  
+  pred$pred_class <- factor(ifelse(pred$Yes >= 0.5, "Yes", "No"), levels = c("No", "Yes"))
+  
+  # Confusion Matrix
+  cm <- confusionMatrix(pred$pred_class, pred$obs, positive = "Yes")
+  
+  # AUROC
+  roc_obj <- roc(pred$obs, pred$Yes)
+  # return
+  c(
+    Accuracy = round(cm$overall["Accuracy"], 3),
+    F1 = round(cm$byClass["F1"], 3),
+    Precision = round(cm$byClass["Precision"], 3),
+    Recall = round(cm$byClass["Recall"], 3),
+    Specificity = round(cm$byClass["Specificity"], 3),
+    AUROC = round(auc(roc_obj), 3)
+  )
+}
+
+results <- sapply(models, metrics) |> t() |> as.data.frame()
+
+# Rename duplicated columns
+colnames(results) <- c("Accuracy","F1 Score","Precision","Recall","Specificity","AUROC")
+
+# Add model names
+results$model <- rownames(results)
+results <- results[, c("Accuracy","F1 Score","Precision","Recall","Specificity","AUROC")]
+results
+```
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+## plotting
+long_results <- results |>
+  tibble::rownames_to_column(var = "Model") |> 
+  pivot_longer(
+    cols = -Model,
+    names_to = "Metric",
+    values_to = "Value"
+  )
+
+ggplot(long_results, aes(x = Metric, y = Value, colour = Model, group = Model)) +
+  geom_point(size = 3) +
+  geom_line(size = 1) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Comparison of Model Performance Metrics.",
+  ) +
+  scale_color_brewer(palette = "Set2")
+
+```
+
+
+### Summary
+which model performs the best.
 
 \newpage
 
