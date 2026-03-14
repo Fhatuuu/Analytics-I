@@ -273,6 +273,9 @@ colnames(results) <- c("Accuracy","F1 Score","Precision","Recall","Specificity",
 results$model <- rownames(results)
 results <- results[, c("Accuracy","F1 Score","Precision","Recall","Specificity","AUROC")]
 results
+
+kable(results, caption = "Table of CV metrics.",
+      align = "c")
 ```
 
 ```{r fig.width=12, fig.height=10,fig.pos='H'}
