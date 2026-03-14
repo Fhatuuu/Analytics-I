@@ -127,11 +127,13 @@ train_proc$HighPrice <- factor(train_proc$HighPrice,
 # Cross Validation (definition)
 train_control <- trainControl(
   method = "cv",
-  number = 5,
+  number = 10,
   classProbs = TRUE,
   summaryFunction = twoClassSummary,
   savePredictions = "final"
 )
+
+modelLookup("rf")
 ```
 
 
@@ -151,6 +153,7 @@ enet_fit <- train(
   tuneGrid =expand.grid(alpha = alpha, lambda = lambda_vals),
   metric = "ROC"
 )
+enet_fit
 
 ```
 
@@ -164,11 +167,12 @@ set.seed(2026)
 rf_fit <- train(
   HighPrice ~ .,
   data = train_proc,
-  method = "rf",
+  method = "ranger",
   tuneLength = 5,
   trControl = train_control,
   metric = "ROC"
 )
+
 ```
 
 #### xgBoost
