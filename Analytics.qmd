@@ -159,7 +159,7 @@ rf_fit <- train(
   HighPrice ~ .,
   data = train_proc,
   method = "rf",
-  tuneLength = 5,
+  tuneLength = 10,
   trControl = train_control,
   metric = "ROC"
 )
