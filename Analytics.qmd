@@ -145,7 +145,6 @@ enet_fit <- train(
   tuneGrid =expand.grid(alpha = alpha, lambda = lambda_vals),
   metric = "ROC"
 )
-
 ```
 
 #### Random Forest
@@ -260,6 +259,7 @@ colnames(results) <- c("Accuracy","F1 Score","Precision","Recall","Specificity",
 results$model <- rownames(results)
 results <- results[, c("Accuracy","F1 Score","Precision","Recall","Specificity","AUROC")]
 results
+kable(results, caption = "Table of CV metrics")
 ```
 ```{r}
 #| echo: false
@@ -293,6 +293,10 @@ which model performs the best.
 \newpage
 
 ## Question 3
+```{r}
+
+```
+
 
 \newpage
 
