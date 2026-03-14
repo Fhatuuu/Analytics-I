@@ -168,9 +168,11 @@ rf_fit <- train(
   HighPrice ~ .,
   data = train_proc,
   method = "ranger",
-  tuneLength = 5,
+  tuneLength = 3,
+  num.trees = 150,
+  importance = 'impurity',
   trControl = train_control,
-  metric = "ROC"
+  num.threads = parallel::detectCores()
 )
 rf_fit
 
