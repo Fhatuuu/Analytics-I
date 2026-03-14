@@ -172,6 +172,7 @@ rf_fit <- train(
   trControl = train_control,
   metric = "ROC"
 )
+rf_fit
 
 ```
 
@@ -271,6 +272,7 @@ results$model <- rownames(results)
 results <- results[, c("Accuracy","F1 Score","Precision","Recall","Specificity","AUROC")]
 results
 ```
+
 ```{r fig.width=12, fig.height=10,fig.pos='H'}
 #| echo: false
 #| message: false
@@ -305,6 +307,7 @@ which model performs the best.
 \newpage
 
 ## Question 3
+
 
 \newpage
 
