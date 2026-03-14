@@ -121,7 +121,7 @@ train_proc$HighPrice <- factor(train_proc$HighPrice,
 # Cross Validation
 train_control <- trainControl(
   method = "cv",
-  number = 5,
+  number = 10,
   classProbs = TRUE,
   summaryFunction = twoClassSummary,
   savePredictions = "final"
@@ -142,9 +142,10 @@ enet_fit <- train(
   data = train_proc,
   method = "glmnet",
   trControl = train_control,
-  tuneGrid =expand.grid(alpha = alpha, lambda = lambda_vals),
+  tuneGrid = expand.grid(alpha = alpha, lambda = lambda_vals),
   metric = "ROC"
 )
+
 ```
 
 #### Random Forest
