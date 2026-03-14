@@ -2,7 +2,7 @@
 title: "Continuous Assignment 1"
 author: 
   - "Fhatuwani Mokwenda"
-  - "Jadene Jafthar"
+  - "Jadene Jaftha"
 format:
   pdf: 
     mainfont: "Times New Roman"
@@ -119,10 +119,10 @@ The predictor variables are as follows:
 # centering for KNN and elastic net
 prepoc <- preProcess(X, method = c("center", "scale"))
 X_processed <- predict(prepoc, X)
-train_proc <- cbind(X_processed, HighPrice = y)
+train_proc <- cbind(X_processed, HighPrice = y) #rebuilding training set
 train_proc$HighPrice <- factor(train_proc$HighPrice,
                                levels = c(0, 1),
-                               labels = c("No", "Yes"))
+                               labels = c("No", "Yes")) #changing HighPrice to Yes or No
 
 # Cross Validation (definition)
 train_control <- trainControl(
