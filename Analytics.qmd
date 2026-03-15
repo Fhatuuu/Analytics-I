@@ -201,7 +201,8 @@ xb_fit <- train(
   method = "xgbTree",
   trControl = train_control,
   tuneGrid = xb_grid,
-  metric = "ROC"
+  metric = "ROC",
+  verbosity = 0
 )
 
 ```
