@@ -204,7 +204,7 @@ xb_fit <- train(
   metric = "ROC",
   verbosity = 0
 )
-
+xb_fit$results
 ```
 
 
@@ -313,6 +313,9 @@ which model performs the best.
 \newpage
 
 ## Question 3
+```{r}
+tau = seq(0, 1, 0.1) #For understanding this, go to ROC curve and Regularisation in Notes 
+```
 
 
 \newpage
