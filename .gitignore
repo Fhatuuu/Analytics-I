@@ -1,4 +1,7 @@
+.gitignore
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+listings.csv
+variable_descriptions.csv
